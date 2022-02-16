@@ -1,8 +1,8 @@
 package com.BankApplication.ABCBank.repository;
 
-import com.BankApplication.ABCBank.model.user;
+import com.BankApplication.ABCBank.model.UserModel;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface userRepository extends JpaRepository<user, Long> {
+public interface UserRepository extends JpaRepository<UserModel, Long> {
     //DAO = repository
 }
