@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 public class RequestRegisterModel {
     private String name;
 //    private String email;
-    private String NRIC;
+    private String nric;
     private String streetAddr;
     private String blockAddr;
     private String unitAddr;

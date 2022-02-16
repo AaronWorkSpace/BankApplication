@@ -28,12 +28,15 @@ public class RegistrationController {
 
         ResponseSuccessFailModel response = new ResponseSuccessFailModel();
         response.setStatus(false);
-
-        log.info(request.getNRIC());
-
+        request.getNric().toUpperCase();
         try {
-            if (registrationCheckerService.nameCheck(request.getName()) ||
-                    registrationCheckerService.nricCheck(request.getNRIC())) {
+
+            //check name / nric
+            if (registrationCheckerService.nameCheck(request.getName()) &&
+                    registrationCheckerService.nricCheck(request.getNric())){
+                return new ResponseEntity(response, HttpStatus.BAD_REQUEST);
+            }
+            if(registrationCheckerService.duplicateCheck(request.getNric())) {
                 return new ResponseEntity(response, HttpStatus.BAD_REQUEST);
             }
         }catch(Exception e){

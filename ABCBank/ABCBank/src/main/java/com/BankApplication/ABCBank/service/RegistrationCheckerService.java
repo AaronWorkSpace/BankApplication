@@ -1,7 +1,14 @@
 package com.BankApplication.ABCBank.service;
 
+import ch.qos.logback.core.net.SyslogOutputStream;
+import com.BankApplication.ABCBank.model.UserModel;
+import com.BankApplication.ABCBank.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -14,138 +21,79 @@ public class RegistrationCheckerService {
 
     //check NRIC
     public boolean nricCheck(String nric){
+        char[] st = "JZIHGFEDCBA".toCharArray();
+        char[] fg = "XWUTRQPNMLK".toCharArray();
+
         //check if nric length is 9
         if(nric.length() != 9){
             return false;
         }
-        nric = nric.toLowerCase();
-        //check if first character is s / t / g
-        char ch = nric.charAt(0);
-        if(ch != 's' || ch != 't' || ch != 'g'){
+
+        nric = nric.toUpperCase();
+
+        char[] icArray = new char[9];
+
+        for (int i = 0; i < 9; i++) {
+            icArray[i] = nric.charAt(i);
+        }
+
+
+        if(icArray[0] != 'S' && icArray[0] != 'T' && icArray[0] != 'G'){
+            log.debug("ch: {}", icArray[0]);
             return false;
         }
 
-        char digit;
         //check if there is 7 digits
-        for(int i = 1; i < nric.length(); i++){
-            digit = nric.charAt(i);
-            if(!Character.isDigit(digit)){
+        for(int i = 1; i < nric.length() - 1; i++){
+            if(!Character.isDigit(icArray[i])){
+                log.debug("One of the digit is letter / symbol");
                 return false;
             }
         }
 
-        int sum = 0;
         //multiply by weight 2, 7, 6, 5, 4, 3, 2
-        for(int i = 1; i < nric.length(); i++){
-            digit = nric.charAt(i);
-            switch(i){
-                case 2:
-                    sum += i * 7;
-                    break;
-                case 3:
-                    sum += i * 6;
-                    break;
-                case 4:
-                    sum += i * 5;
-                    break;
-                case 5:
-                    sum += i * 4;
-                    break;
-                case 6:
-                    sum += i * 3;
-                    break;
-                default:
-                    sum += i * 2;
-                    break;
-            }
-        }
+        int sum = (Integer.parseInt(String.valueOf(icArray[1]), 10)) * 2 +
+                (Integer.parseInt(String.valueOf(icArray[2]), 10)) * 7 +
+                (Integer.parseInt(String.valueOf(icArray[3]), 10)) * 6 +
+                (Integer.parseInt(String.valueOf(icArray[4]), 10)) * 5 +
+                (Integer.parseInt(String.valueOf(icArray[5]), 10)) * 4 +
+                (Integer.parseInt(String.valueOf(icArray[6]), 10)) * 3 +
+                (Integer.parseInt(String.valueOf(icArray[7]), 10)) * 2;
 
         //mod sum by 11
         int mod = sum % 11;
 
         char lastLetter = ' ';
         //setting last letter
-        if(ch == 's'){
-            switch(mod){
-                case 0:
-                    lastLetter = 'x';
-                    break;
-                case 1:
-                    lastLetter = 'w';
-                    break;
-                case 2:
-                    lastLetter = 'u';
-                    break;
-                case 3:
-                    lastLetter = 't';
-                    break;
-                case 4:
-                    lastLetter = 'r';
-                    break;
-                case 5:
-                    lastLetter = 'q';
-                    break;
-                case 6:
-                    lastLetter = 'p';
-                    break;
-                case 7:
-                    lastLetter = 'n';
-                    break;
-                case 8:
-                    lastLetter = 'm';
-                    break;
-                case 9:
-                    lastLetter = 'l';
-                    break;
-                default:
-                    lastLetter = 'k';
-            }
+        if(icArray[0] == 'S'){
+            lastLetter = st[mod];
         }
         else{
-            switch(mod){
-                case 0:
-                    lastLetter = 'j';
-                    break;
-                case 1:
-                    lastLetter = 'z';
-                    break;
-                case 2:
-                    lastLetter = 'i';
-                    break;
-                case 3:
-                    lastLetter = 'h';
-                    break;
-                case 4:
-                    lastLetter = 'g';
-                    break;
-                case 5:
-                    lastLetter = 'f';
-                    break;
-                case 6:
-                    lastLetter = 'e';
-                    break;
-                case 7:
-                    lastLetter = 'd';
-                    break;
-                case 8:
-                    lastLetter = 'c';
-                    break;
-                case 9:
-                    lastLetter = 'b';
-                    break;
-                default:
-                    lastLetter = 'a';
-            }
+            lastLetter = fg[mod];
         }
 
         //check last letter is the same or not
-        ch = nric.charAt(8);
-        if(ch != lastLetter){
-            log.info("Actual last letter: ()", lastLetter);
+        if(icArray[8] != lastLetter){
+            log.info("Actual last letter: {}", lastLetter);
             return false;
         }
 
         return true;
+    }
+
+    @Autowired
+    UserRepository userRepository;
+
+    public boolean duplicateCheck(String nric) {
+        //if h2 data base have record, return false
+        //else return true
+
+        List<UserModel> userModelList = userRepository.findAll();
+
+        userModelList.forEach(o -> log.info(o.getNric()));
+
+        return userModelList.stream()
+                .anyMatch(o -> o.getNric().equalsIgnoreCase(nric));
     }
 
 //    //check phoneNumber, make sure have 8 or 9 in front and 8 digits in total

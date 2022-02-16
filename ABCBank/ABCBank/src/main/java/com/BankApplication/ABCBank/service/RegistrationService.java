@@ -15,7 +15,7 @@ public class RegistrationService {
         try {
             UserModel userModel = UserModel.builder()
                     .name(request.getName())
-                    .NRIC(request.getNRIC())
+                    .nric(request.getNric())
                     .streetAddr(request.getStreetAddr())
                     .blockAddr(request.getBlockAddr())
                     .unitAddr(request.getUnitAddr())

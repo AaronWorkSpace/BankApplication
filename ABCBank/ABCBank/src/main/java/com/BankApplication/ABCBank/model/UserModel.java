@@ -20,7 +20,7 @@ public class UserModel {
     private long id;
     private String name;
 //    private String email;
-    private String NRIC;
+    private String nric;
     private String streetAddr;
     private String blockAddr;
     private String unitAddr;
